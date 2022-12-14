@@ -28,7 +28,7 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 torch.manual_seed(args.seed)
@@ -73,7 +73,7 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
 
 model = Net()
 if args.cuda:
@@ -96,7 +96,7 @@ def train(epoch):
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.data[0]))
+                100. * batch_idx / len(train_loader), loss.data.item()))
 
 
 def test():
@@ -106,9 +106,8 @@ def test():
     for data, target in test_loader:
         if args.cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
         output = model(data)
-        test_loss += F.nll_loss(output, target, size_average=False).data[0] # sum up batch loss
+        test_loss += F.nll_loss(output, target, reduction='sum').data.item() # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1] # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
