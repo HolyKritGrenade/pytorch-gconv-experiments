@@ -6,3 +6,6 @@ venv/
 
 # ignore data folder
 data/
+
+# ignores any document folders
+documentation/
