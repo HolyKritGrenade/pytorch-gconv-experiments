@@ -1,0 +1,3 @@
+[submodule "GrouPy"]
+	path = GrouPy
+	url = https://github.com/adambielski/GrouPy.git
